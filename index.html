@@ -5,67 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>에즈윤 Pick 민감피부 추천템</title>
 
-  <!-- CSV 파싱 라이브러리 (줄바꿈/쉼표 안전) -->
+  <!-- 안전한 CSV 파싱 -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
-    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; margin:0; padding:0; background:#f9fafb; }
-
-    /* 헤더 이미지 */
-    .header img { max-width:100%; height:auto; max-height:60vh; margin:0 auto; display:block; }
-
-    /* 내러티브 박스 */
-    .description{
-      max-width:600px; margin:16px auto; padding:20px;
-      background:#fff; border:1px solid #e5e7eb; border-radius:12px;
-      box-shadow:0 1px 3px rgba(0,0,0,.1); text-align:center; color:#4b5563;
-    }
-    .description p{ margin:0 0 4px; line-height:1.6; }
-    .description strong{ font-weight:700; }
-
-    /* 수수료 고지 */
-    .disclosure{
-      max-width:600px; margin:0 auto 20px; padding:14px 16px;
-      background:#fff; border:1px solid #e5e7eb; border-radius:12px;
-      color:#4b5563; font-size:.95rem; line-height:1.55; text-align:center;
-    }
-
-    /* 카테고리 */
-    .category{ text-align:left; max-width:800px; margin:20px auto 8px; padding:10px 20px; border-radius:16px; }
-    .category.green  { background:#e7f3e6; } /* 클렌저 */
-    .category.blue   { background:#e7f0fa; } /* 크림 */
-    .category.yellow { background:#fff6cc; } /* 선크림 */
-    .category h2{ font-size:1.5rem; color:#111827; margin:0; font-weight:800; }
-
-    /* 카드 */
-    .list{ display:flex; flex-direction:column; gap:12px; max-width:800px; margin:12px auto 28px; padding:0 20px; }
-    .card{ background:#fff; border-radius:16px; padding:16px 24px; max-width:600px; width:100%; margin:0 auto; box-shadow:0 2px 10px rgba(0,0,0,.06); }
-    .content{ border:none; border-radius:8px; padding:16px; }
-    .header-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-    .score{ width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.25rem; }
-    .details{ display:flex; gap:32px; }
-    .info{ flex:1; }
-    .feature{ display:flex; align-items:flex-start; gap:8px; margin-bottom:12px; }
-    .image{ width:260px; height:200px; border-radius:16px; object-fit:cover; }
-    .button{ display:inline-flex; align-items:center; gap:8px; margin-top:16px; padding:12px 22px; background:#60a5fa; color:#fff; font-size:.95rem; font-weight:800; border-radius:10px; text-decoration:none; transition:.25s; }
-    .button:hover{ background:#3b82f6; }
-
-    .note{ margin:16px auto 40px; color:#6b7280; font-size:.875rem; text-align:center; max-width:800px; }
-
-    @media (max-width:768px){
-      .header img{ width:100vw; height:auto; }
-      .description{ padding:10px; margin:0 10px; }
-      .list{ padding:0 8px; }
-      .card{ padding:14px 10px; }
-      .image{ width:120px; height:120px; }
-    }
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;margin:0;padding:0;background:#f9fafb}
+    .header img{max-width:100%;height:auto;max-height:60vh;margin:0 auto;display:block}
+    .description{max-width:600px;margin:16px auto;padding:20px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);text-align:center;color:#4b5563}
+    .description p{margin:0 0 4px;line-height:1.6}.description strong{font-weight:700}
+    .disclosure{max-width:600px;margin:0 auto 20px;padding:14px 16px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;color:#4b5563;font-size:.95rem;line-height:1.55;text-align:center}
+    .category{text-align:left;max-width:800px;margin:20px auto 8px;padding:10px 20px;border-radius:16px}
+    .category.green{background:#e7f3e6}.category.blue{background:#e7f0fa}.category.yellow{background:#fff6cc}
+    .category h2{font-size:1.5rem;color:#111827;margin:0;font-weight:800}
+    .list{display:flex;flex-direction:column;gap:12px;max-width:800px;margin:12px auto 28px;padding:0 20px}
+    .card{background:#fff;border-radius:16px;padding:16px 24px;max-width:600px;width:100%;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .content{border:none;border-radius:8px;padding:16px}
+    .header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .score{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.25rem}
+    .details{display:flex;gap:32px}.info{flex:1}
+    .feature{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
+    .image{width:260px;height:200px;border-radius:16px;object-fit:cover}
+    .button{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:12px 22px;background:#60a5fa;color:#fff;font-size:.95rem;font-weight:800;border-radius:10px;text-decoration:none;transition:.25s}
+    .button:hover{background:#3b82f6}
+    .note{margin:16px auto 40px;color:#6b7280;font-size:.875rem;text-align:center;max-width:800px}
+    @media (max-width:768px){.header img{width:100vw;height:auto}.description{padding:10px;margin:0 10px}.list{padding:0 8px}.card{padding:14px 10px}.image{width:120px;height:120px}}
   </style>
 </head>
 <body>
-  <!-- 커버 이미지: 레포에 header-image.png가 있어야 합니다 -->
-  <div class="header">
-    <img src="header-image.png" alt="Header Image">
-  </div>
+  <!-- 커버 이미지(레포 루트에 header-image.png) -->
+  <div class="header"><img src="header-image.png" alt="Header Image"></div>
 
   <!-- 내러티브 박스 -->
   <div class="description">
@@ -73,8 +41,7 @@
     <p>✓ 수백 개 제품 전성분 하나하나 비교</p>
     <p>✓ 관련 논문까지 파헤치며 리서치</p>
     <p>✓ 말라세지아 모낭염 유발 성분 완벽 체크</p>
-    <p><strong>직접 깐깐하게 고르고 골랐습니다.</strong></p>
-    <br/>
+    <p><strong>직접 깐깐하게 고르고 골랐습니다.</strong></p><br/>
     <p>제 피부에 직접 써보고 살아남은 찐템들만 모았습니다.</p>
     <p><strong>민감피부를 위한 단 하나의 리스트 ✨</strong></p>
     <p><strong>믿고 보는 에즈윤픽, 지금 바로 확인해보세요!</strong></p>
@@ -87,97 +54,104 @@
     에즈윤 채널 운영 및 영상 제작에 큰 도움이 됩니다 :)
   </div>
 
-  <!-- 카테고리 영역 -->
+  <!-- 카테고리 -->
   <div class="category green"><h2>1. 클렌저</h2></div>
   <div id="list-클렌저" class="list"></div>
-
   <div class="category blue"><h2>2. 크림</h2></div>
   <div id="list-크림" class="list"></div>
-
   <div class="category yellow"><h2>3. 선크림</h2></div>
   <div id="list-선크림" class="list"></div>
 
-  <p class="note">
-    말라세지아 유발 성분 기준: 0개 최상(초록), 2–3개 양호(연노랑), 4–5개 주의(주황), 6–8개 경계(살구), 9개 이상 위험(빨강)
-  </p>
+  <p class="note">말라세지아 유발 성분 기준: 0개 최상(초록), 2–3개 양호(연노랑), 4–5개 주의(주황), 6–8개 경계(살구), 9개 이상 위험(빨강)</p>
 
   <script>
-    /* 1) 웹에 게시된 CSV 주소 (현재 주소 유지, 캐시 방지 파라미터 추가) */
+    /* ✅ 1) CSV 주소(웹에 게시 → CSV) */
     const RAW_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSiG4Jm5mSMOWJ6AA1fTWn2ZTBalNnWyhTdjbiPQtjiqkaeVXl-TKqnbLOwaaA801YmjKr119UBTiO/pub?gid=234443271&single=true&output=csv";
     const SHEET_CSV_URL = RAW_CSV + (RAW_CSV.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
 
-    /* 2) 타입 별칭 + 섹션 순서 */
-    const TYPE_ALIASES = { "클렌저":"클렌저","cleanser":"클렌저","크림":"크림","cream":"크림","선크림":"선크림","sunscreen":"선크림" };
+    /* 타입 매핑 + 섹션 순서 */
+    const TYPE_ALIASES = {"클렌저":"클렌저","cleanser":"클렌저","크림":"크림","cream":"크림","선크림":"선크림","sunscreen":"선크림"};
     const CATEGORY_ORDER = ["클렌저","크림","선크림"];
     const normalizeType = t => TYPE_ALIASES[(t||"").toLowerCase()] || (t||"");
 
-    /* 3) 드라이브 링크 보정 (예방용) */
+    /* 드라이브 링크 보정(예방) */
     function toDirectDriveUrl(url){
       if(!url) return "";
       if(/^https:\/\/drive\.google\.com\/uc\?export=view&id=/.test(url)) return url;
-      const m1 = url.match(/\/file\/d\/([^/]+)/);     // .../file/d/ID/...
-      if(m1) return `https://drive.google.com/uc?export=view&id=${m1[1]}`;
-      const m2 = url.match(/[?&]id=([^&]+)/);        // ...?id=ID
-      if(m2) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
+      const m1 = url.match(/\/file\/d\/([^/]+)/); if(m1) return `https://drive.google.com/uc?export=view&id=${m1[1]}`;
+      const m2 = url.match(/[?&]id=([^&]+)/);    if(m2) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
       return url;
     }
 
-    /* 4) 말라세지아 배지 색 */
+    /* 배지 색 */
     function badgeColor(value){
       const n = Number(String(value).replace(/\D/g,'')) || 0;
-      if(n <= 1) return { bg:'#dcfce7', fg:'#16a34a' };
-      if(n <= 3) return { bg:'#fef9c3', fg:'#ca8a04' };
-      if(n <= 5) return { bg:'#fde68a', fg:'#b45309' };
-      if(n <= 8) return { bg:'#fee2e2', fg:'#b91c1c' };
-      return { bg:'#fecaca', fg:'#991b1b' };
+      if(n<=1) return {bg:'#dcfce7', fg:'#16a34a'};
+      if(n<=3) return {bg:'#fef9c3', fg:'#ca8a04'};
+      if(n<=5) return {bg:'#fde68a', fg:'#b45309'};
+      if(n<=8) return {bg:'#fee2e2', fg:'#b91c1c'};
+      return {bg:'#fecaca', fg:'#991b1b'};
     }
 
-    /* 5) 카드 생성 */
-    function createCard({ name, img, malassezia, features, link }){
-      const wrap = document.createElement('div');
-      wrap.className = 'card';
-      const { bg, fg } = badgeColor(malassezia);
-      wrap.innerHTML = `
+    /* 카드 생성 */
+    function createCard({name,img,malassezia,features,link}){
+      const wrap=document.createElement('div'); wrap.className='card';
+      const {bg,fg}=badgeColor(malassezia);
+      wrap.innerHTML=`
         <div class="content">
           <div class="header-row">
             <div>
               <h2 style="margin:0;font-size:1.25rem;font-weight:800;">${name||''}</h2>
               <p style="color:#4b5563;font-size:.95rem;margin-top:8px;">말라세지아 유발 성분: ${malassezia||'0개'}</p>
             </div>
-            <div class="score" style="background:${bg}; color:${fg};">${(malassezia||'0').toString().replace(/\D/g,'')||'0'}</div>
+            <div class="score" style="background:${bg};color:${fg};">${(malassezia||'0').toString().replace(/\D/g,'')||'0'}</div>
           </div>
           <div class="details">
             <div class="info"></div>
-            <div><img class="image" src="${toDirectDriveUrl(img)||''}" alt="${name||''}"/></div>
+            <div><img class="image" src="${toDirectDriveUrl(img)||''}" alt="${name||''}"></div>
           </div>
-        </div>
-      `;
-      const info = wrap.querySelector('.info');
-      (features||'')
-        .split(/\n|✔|✅|▪|•|-\s/).map(s=>s.trim()).filter(Boolean)
-        .forEach(line=>{
-          const row = document.createElement('div');
-          row.className = 'feature';
-          row.innerHTML = `<span class="emoji">✅</span><span style="color:#4b5563;font-size:.95rem;">${line}</span>`;
-          info.appendChild(row);
-        });
+        </div>`;
+      const info=wrap.querySelector('.info');
+      (features||'').split(/\n|✔|✅|▪|•|-\s/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
+        const row=document.createElement('div'); row.className='feature';
+        row.innerHTML=`<span class="emoji">✅</span><span style="color:#4b5563;font-size:.95rem;">${line}</span>`;
+        info.appendChild(row);
+      });
       if(link){
-        const btn = document.createElement('a');
-        btn.href = link; btn.target="_blank"; btn.className="button"; btn.textContent="구매하기";
-        info.appendChild(btn);
+        const a=document.createElement('a'); a.href=link; a.target='_blank'; a.className='button'; a.textContent='구매하기';
+        info.appendChild(a);
       }
       return wrap;
     }
 
-    /* 6) CSV 로드 → PapaParse로 안정 파싱 → 렌더 */
+    /* ✅ 핵심: 헤더를 정규화해서 열 밀림 방지 */
+    const headerMap = {
+      "type":"type","제품분류":"type",
+      "img":"img","image":"img","이미지":"img","제품사진":"img",
+      "name":"name","제품명":"name","제품이름":"name","title":"name",
+      "malassezia":"malassezia","말라세지아":"malassezia","말라세지아 모낭염 유발 성분":"malassezia",
+      "features":"features","특징":"features","제품특징":"features","설명":"features",
+      "link":"link","url":"link","구매링크":"link","new link":"link"
+    };
+    const normHeader = h => headerMap[h.replace(/\uFEFF/g,'').trim().toLowerCase()] || h.replace(/\uFEFF/g,'').trim().toLowerCase();
+
+    /* CSV 로드 → PapaParse 파싱 → 렌더 */
     fetch(SHEET_CSV_URL)
       .then(r => {
         if(!r.ok) throw new Error(`CSV 요청 실패: ${r.status}`);
         return r.text();
       })
       .then(csv => {
-        const { data, errors } = Papa.parse(csv, { header:true, skipEmptyLines:true });
+        const { data, errors } = Papa.parse(csv, {
+          header: true,
+          skipEmptyLines: true,
+          transformHeader: normHeader   /* ← 헤더 정규화 */
+        });
         if(errors?.length) console.warn('CSV parse warnings:', errors.slice(0,3));
+
+        // 헤더 정규화 결과 확인(디버그)
+        console.log('Parsed keys:', Object.keys(data[0] || {}));
+        console.table((data||[]).slice(0,3));
 
         const rows = (data||[]).map(r => ({
           type:       normalizeType((r.type||'').trim()),
@@ -188,15 +162,20 @@
           link:       (r.link||'').trim()
         }));
 
+        // 렌더
         CATEGORY_ORDER.forEach(type => {
-          const target = document.getElementById(`list-${type}`);
+          const target=document.getElementById(`list-${type}`);
           rows.filter(x => x.type === type).forEach(x => target.appendChild(createCard(x)));
         });
       })
       .catch(err => {
         console.error('CSV 로드 오류', err);
-        alert('CSV를 불러오지 못했습니다. "파일 → 웹에 게시 → CSV" 링크가 맞는지 확인해 주세요.');
+        alert('CSV를 불러오지 못했습니다. "파일 → 웹에 게시 → CSV" 링크가 맞는지, HTTP로 열었는지 확인해 주세요.');
       });
+
+    /* 🔧 참고: 파일을 더블클릭(file://)로 열면 fetch가 막힙니다.
+       - 로컬: 터미널에서 `python3 -m http.server 5173` 후 http://localhost:5173 로 접속
+       - 또는 GitHub Pages로 배포해서 https://<아이디>.github.io/<레포> 로 접속 */
   </script>
 </body>
 </html>
