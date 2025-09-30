@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="ko">
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>에즈윤 Pick 민감피부 추천템</title>
 
+  <!-- CSV 파싱 라이브러리 (줄바꿈/쉼표 안전) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <style>
-    body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; margin:0; padding:0; background:#f9fafb; }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; margin:0; padding:0; background:#f9fafb; }
 
     /* 헤더 이미지 */
-    .header img{ max-width:100%; height:auto; max-height:60vh; margin:0 auto; display:block; }
+    .header img { max-width:100%; height:auto; max-height:60vh; margin:0 auto; display:block; }
 
     /* 내러티브 박스 */
     .description{
@@ -50,7 +52,6 @@
 
     .note{ margin:16px auto 40px; color:#6b7280; font-size:.875rem; text-align:center; max-width:800px; }
 
-    /* 반응형 */
     @media (max-width:768px){
       .header img{ width:100vw; height:auto; }
       .description{ padding:10px; margin:0 10px; }
@@ -61,7 +62,7 @@
   </style>
 </head>
 <body>
-  <!-- 커버 이미지 -->
+  <!-- 커버 이미지: 레포에 header-image.png가 있어야 합니다 -->
   <div class="header">
     <img src="header-image.png" alt="Header Image">
   </div>
@@ -101,20 +102,27 @@
   </p>
 
   <script>
-    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSiG4Jm5mSMOWJ6AA1fTWn2ZTBalNnWyhTdjbiPQtjiqkaeVXl-TKqnbLOwaaA801YmjKr119UBTiO/pub?gid=234443271&single=true&output=csv";
+    /* 1) 웹에 게시된 CSV 주소 (현재 주소 유지, 캐시 방지 파라미터 추가) */
+    const RAW_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSiG4Jm5mSMOWJ6AA1fTWn2ZTBalNnWyhTdjbiPQtjiqkaeVXl-TKqnbLOwaaA801YmjKr119UBTiO/pub?gid=234443271&single=true&output=csv";
+    const SHEET_CSV_URL = RAW_CSV + (RAW_CSV.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
 
-    function parseCSV(text){
-      const rows = text.replace(/\r/g,'').split('\n').filter(Boolean);
-      const pick = s => s.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(c=>c.replace(/^"|"$/g,'').trim()) || [];
-      const headers = pick(rows.shift());
-      return rows.map(line => {
-        const cols = pick(line);
-        const obj = {};
-        headers.forEach((h,i)=> obj[h] = (cols[i] ?? "").trim());
-        return obj;
-      });
+    /* 2) 타입 별칭 + 섹션 순서 */
+    const TYPE_ALIASES = { "클렌저":"클렌저","cleanser":"클렌저","크림":"크림","cream":"크림","선크림":"선크림","sunscreen":"선크림" };
+    const CATEGORY_ORDER = ["클렌저","크림","선크림"];
+    const normalizeType = t => TYPE_ALIASES[(t||"").toLowerCase()] || (t||"");
+
+    /* 3) 드라이브 링크 보정 (예방용) */
+    function toDirectDriveUrl(url){
+      if(!url) return "";
+      if(/^https:\/\/drive\.google\.com\/uc\?export=view&id=/.test(url)) return url;
+      const m1 = url.match(/\/file\/d\/([^/]+)/);     // .../file/d/ID/...
+      if(m1) return `https://drive.google.com/uc?export=view&id=${m1[1]}`;
+      const m2 = url.match(/[?&]id=([^&]+)/);        // ...?id=ID
+      if(m2) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
+      return url;
     }
 
+    /* 4) 말라세지아 배지 색 */
     function badgeColor(value){
       const n = Number(String(value).replace(/\D/g,'')) || 0;
       if(n <= 1) return { bg:'#dcfce7', fg:'#16a34a' };
@@ -124,6 +132,7 @@
       return { bg:'#fecaca', fg:'#991b1b' };
     }
 
+    /* 5) 카드 생성 */
     function createCard({ name, img, malassezia, features, link }){
       const wrap = document.createElement('div');
       wrap.className = 'card';
@@ -133,27 +142,25 @@
           <div class="header-row">
             <div>
               <h2 style="margin:0;font-size:1.25rem;font-weight:800;">${name||''}</h2>
-              <p style="color:#4b5563;font-size:.95rem;margin-top:8px;">
-                말라세지아 유발 성분: ${malassezia||'0개'}
-              </p>
+              <p style="color:#4b5563;font-size:.95rem;margin-top:8px;">말라세지아 유발 성분: ${malassezia||'0개'}</p>
             </div>
-            <div class="score" style="background:${bg}; color:${fg};">
-              ${(malassezia||'0').toString().replace(/\D/g,'')||'0'}
-            </div>
+            <div class="score" style="background:${bg}; color:${fg};">${(malassezia||'0').toString().replace(/\D/g,'')||'0'}</div>
           </div>
           <div class="details">
             <div class="info"></div>
-            <div><img class="image" src="${img||''}" alt="${name||''}"/></div>
+            <div><img class="image" src="${toDirectDriveUrl(img)||''}" alt="${name||''}"/></div>
           </div>
         </div>
       `;
       const info = wrap.querySelector('.info');
-      (features||'').split(/\n|✔|✅|▪|•|-/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
-        const row = document.createElement('div');
-        row.className = 'feature';
-        row.innerHTML = `<span class="emoji">✅</span><span style="color:#4b5563;font-size:.95rem;">${line}</span>`;
-        info.appendChild(row);
-      });
+      (features||'')
+        .split(/\n|✔|✅|▪|•|-\s/).map(s=>s.trim()).filter(Boolean)
+        .forEach(line=>{
+          const row = document.createElement('div');
+          row.className = 'feature';
+          row.innerHTML = `<span class="emoji">✅</span><span style="color:#4b5563;font-size:.95rem;">${line}</span>`;
+          info.appendChild(row);
+        });
       if(link){
         const btn = document.createElement('a');
         btn.href = link; btn.target="_blank"; btn.className="button"; btn.textContent="구매하기";
@@ -162,19 +169,33 @@
       return wrap;
     }
 
-    const TYPE_ALIASES = { "클렌저":"클렌저","cleanser":"클렌저","크림":"크림","cream":"크림","선크림":"선크림","sunscreen":"선크림" };
-    const CATEGORY_ORDER = ["클렌저","크림","선크림"];
-    function normalizeType(t){ return TYPE_ALIASES[(t||"").toLowerCase()]||t; }
-
+    /* 6) CSV 로드 → PapaParse로 안정 파싱 → 렌더 */
     fetch(SHEET_CSV_URL)
-      .then(r=>r.text())
-      .then(txt=>{
-        const rows=parseCSV(txt);
-        rows.forEach(r=>r.type=normalizeType(r.type));
-        CATEGORY_ORDER.forEach(type=>{
-          const target=document.getElementById(`list-${type}`);
-          rows.filter(r=>r.type===type).forEach(r=>target.appendChild(createCard(r)));
+      .then(r => {
+        if(!r.ok) throw new Error(`CSV 요청 실패: ${r.status}`);
+        return r.text();
+      })
+      .then(csv => {
+        const { data, errors } = Papa.parse(csv, { header:true, skipEmptyLines:true });
+        if(errors?.length) console.warn('CSV parse warnings:', errors.slice(0,3));
+
+        const rows = (data||[]).map(r => ({
+          type:       normalizeType((r.type||'').trim()),
+          img:        (r.img||'').trim(),
+          name:       (r.name||'').trim(),
+          malassezia: (r.malassezia||'').trim(),
+          features:   (r.features||'').trim(),
+          link:       (r.link||'').trim()
+        }));
+
+        CATEGORY_ORDER.forEach(type => {
+          const target = document.getElementById(`list-${type}`);
+          rows.filter(x => x.type === type).forEach(x => target.appendChild(createCard(x)));
         });
+      })
+      .catch(err => {
+        console.error('CSV 로드 오류', err);
+        alert('CSV를 불러오지 못했습니다. "파일 → 웹에 게시 → CSV" 링크가 맞는지 확인해 주세요.');
       });
   </script>
 </body>
