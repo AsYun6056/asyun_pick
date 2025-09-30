@@ -74,16 +74,27 @@
     const CATEGORY_ORDER = ["클렌저","크림","선크림"];
     const normalizeType = t => TYPE_ALIASES[(t||"").toLowerCase()] || (t||"");
 
-    /* 드라이브 이미지 URL을 안정적인 썸네일 API로 변환 */
-    function driveImageUrl(url){
-      if(!url) return "";
-      const clean = url.replace(/\uFEFF/g, '').trim(); // BOM/공백 제거
-      // ?id=..., /d/..., id=...
+    /* 구글 드라이브 이미지: 파일 ID 추출 + 후보 URL들 생성 */
+    function extractDriveId(url){
+      if(!url) return null;
+      const clean = url.replace(/\uFEFF/g,'').trim();
+      // 우선순위대로 매칭
       const m = clean.match(/[?&]id=([^&]+)/) || clean.match(/\/d\/([^/]+)/) || clean.match(/id=([^&]+)/);
-      const id = m ? m[1].trim() : null;
-      if(!id) return clean; // 외부 URL일 수도 있으니 원본 유지
-      // 썸네일 API (CORS/권한 이슈 적고 빠름)
-      return `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+      return m ? m[1].trim() : null;
+    }
+    function buildDriveCandidates(url){
+      const id = extractDriveId(url);
+      if(!id) return [url]; // 외부 URL일 수 있음
+      return [
+        // 1) 썸네일 API (대부분 성공)
+        `https://drive.google.com/thumbnail?id=${id}&sz=w800`,
+        // 2) 뷰 URL
+        `https://drive.google.com/uc?export=view&id=${id}`,
+        // 3) 다운로드 URL
+        `https://drive.google.com/uc?export=download&id=${id}`,
+        // 4) 혹시 모를 원본
+        url
+      ];
     }
 
     /* 배지 색 */
@@ -100,7 +111,7 @@
     function createCard({name,img,malassezia,features,link}){
       const wrap=document.createElement('div'); wrap.className='card';
       const {bg,fg}=badgeColor(malassezia);
-      const imgUrl = driveImageUrl(img);
+      const candidates = buildDriveCandidates(img);
 
       wrap.innerHTML=`
         <div class="content">
@@ -113,21 +124,32 @@
           </div>
           <div class="details">
             <div class="info"></div>
-            <div><img class="image" src="${imgUrl}" alt="${name||''}"></div>
+            <div><img class="image" referrerpolicy="no-referrer" loading="lazy" alt="${name||''}"></div>
           </div>
         </div>`;
 
-      // 이미지 실패 시 디버그 + 플레이스홀더
-      const el = wrap.querySelector('img.image');
-      el.addEventListener('error', () => {
-        console.warn('이미지 로드 실패:', name, el.src);
-        el.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-          `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="200">
-            <rect width="100%" height="100%" fill="#f3f4f6"/>
-            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9ca3af" font-size="14">이미지 없음</text>
-           </svg>`
-        );
+      // 이미지 순차 시도
+      const imageEl = wrap.querySelector('img.image');
+      let idx = 0;
+      const tryNext = () => {
+        if(idx >= candidates.length){
+          console.warn('이미지 모두 실패:', name, candidates);
+          imageEl.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+            `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="200">
+               <rect width="100%" height="100%" fill="#f3f4f6"/>
+               <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9ca3af" font-size="14">이미지 없음</text>
+             </svg>`
+          );
+          return;
+        }
+        const url = candidates[idx++];
+        imageEl.src = url;
+      };
+      imageEl.addEventListener('error', () => {
+        console.warn('이미지 실패 → 다음 후보 시도:', name, imageEl.src);
+        tryNext();
       });
+      tryNext(); // 첫 시도
 
       // 특징 리스트
       const info=wrap.querySelector('.info');
@@ -159,16 +181,9 @@
 
     /* CSV 로드 → PapaParse 파싱 → 렌더 */
     fetch(SHEET_CSV_URL)
-      .then(r => {
-        if(!r.ok) throw new Error(`CSV 요청 실패: ${r.status}`);
-        return r.text();
-      })
+      .then(r => { if(!r.ok) throw new Error(`CSV 요청 실패: ${r.status}`); return r.text(); })
       .then(csv => {
-        const { data, errors } = Papa.parse(csv, {
-          header: true,
-          skipEmptyLines: true,
-          transformHeader: normHeader
-        });
+        const { data, errors } = Papa.parse(csv, { header:true, skipEmptyLines:true, transformHeader: normHeader });
         if(errors?.length) console.warn('CSV parse warnings:', errors.slice(0,3));
 
         const rows = (data||[]).map(r => ({
@@ -189,10 +204,6 @@
         console.error('CSV 로드 오류', err);
         alert('CSV를 불러오지 못했습니다. "파일 → 웹에 게시 → CSV" 링크와 이미지 공유 권한을 확인해주세요.');
       });
-
-    /* 참고: 파일을 더블클릭(file://)로 열면 fetch가 막힙니다.
-       로컬 테스트는 터미널에서 `python3 -m http.server` 후 http://localhost:8000 로 접속,
-       또는 GitHub Pages로 배포해서 https://<아이디>.github.io/<레포> 로 접속하세요. */
   </script>
 </body>
 </html>
