@@ -24,15 +24,38 @@
     .score{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.25rem}
     .details{display:flex;gap:32px}.info{flex:1}
     .feature{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
-    .image{width:260px;height:200px;border-radius:16px;object-fit:cover}
+    
+    /* 📌 이미지 정사각형 */
+    .image{
+      width:160px;
+      height:160px;
+      border-radius:12px;
+      object-fit:cover; /* 중앙 기준 크롭 */
+    }
+
     .button{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:12px 22px;background:#60a5fa;color:#fff;font-size:.95rem;font-weight:800;border-radius:10px;text-decoration:none;transition:.25s}
     .button:hover{background:#3b82f6}
     .note{margin:16px auto 40px;color:#6b7280;font-size:.875rem;text-align:center;max-width:800px}
-    @media (max-width:768px){.header img{width:100vw;height:auto}.description{padding:10px;margin:0 10px}.list{padding:0 8px}.card{padding:14px 10px}.image{width:120px;height:120px}}
+
+    /* 모바일 대응 */
+    @media (max-width:768px){
+      .header img{width:100vw;height:auto}
+      .description{padding:10px;margin:0 10px}
+      .list{padding:0 8px}
+      .card{padding:14px 10px}
+
+      /* 📌 모바일에서는 더 작은 정사각형 */
+      .image{
+        width:80px;
+        height:80px;
+        border-radius:8px;
+        object-fit:cover;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- 커버 이미지(레포 루트에 header-image.png) -->
+  <!-- 커버 이미지 -->
   <div class="header"><img src="header-image.png" alt="Header Image"></div>
 
   <!-- 내러티브 박스 -->
@@ -65,39 +88,30 @@
   <p class="note">말라세지아 유발 성분 기준: 0개 최상(초록), 2–3개 양호(연노랑), 4–5개 주의(주황), 6–8개 경계(살구), 9개 이상 위험(빨강)</p>
 
   <script>
-    /* 1) CSV 주소(웹에 게시 → CSV) */
     const RAW_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSiG4Jm5mSMOWJ6AA1fTWn2ZTBalNnWyhTdjbiPQtjiqkaeVXl-TKqnbLOwaaA801YmjKr119UBTiO/pub?gid=234443271&single=true&output=csv";
     const SHEET_CSV_URL = RAW_CSV + (RAW_CSV.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
 
-    /* 타입 매핑 + 섹션 순서 */
     const TYPE_ALIASES = {"클렌저":"클렌저","cleanser":"클렌저","크림":"크림","cream":"크림","선크림":"선크림","sunscreen":"선크림"};
     const CATEGORY_ORDER = ["클렌저","크림","선크림"];
     const normalizeType = t => TYPE_ALIASES[(t||"").toLowerCase()] || (t||"");
 
-    /* 구글 드라이브 이미지: 파일 ID 추출 + 후보 URL들 생성 */
     function extractDriveId(url){
       if(!url) return null;
       const clean = url.replace(/\uFEFF/g,'').trim();
-      // 우선순위대로 매칭
       const m = clean.match(/[?&]id=([^&]+)/) || clean.match(/\/d\/([^/]+)/) || clean.match(/id=([^&]+)/);
       return m ? m[1].trim() : null;
     }
     function buildDriveCandidates(url){
       const id = extractDriveId(url);
-      if(!id) return [url]; // 외부 URL일 수 있음
+      if(!id) return [url];
       return [
-        // 1) 썸네일 API (대부분 성공)
         `https://drive.google.com/thumbnail?id=${id}&sz=w800`,
-        // 2) 뷰 URL
         `https://drive.google.com/uc?export=view&id=${id}`,
-        // 3) 다운로드 URL
         `https://drive.google.com/uc?export=download&id=${id}`,
-        // 4) 혹시 모를 원본
         url
       ];
     }
 
-    /* 배지 색 */
     function badgeColor(value){
       const n = Number(String(value).replace(/\D/g,'')) || 0;
       if(n<=1) return {bg:'#dcfce7', fg:'#16a34a'};
@@ -107,7 +121,6 @@
       return {bg:'#fecaca', fg:'#991b1b'};
     }
 
-    /* 카드 생성 */
     function createCard({name,img,malassezia,features,link}){
       const wrap=document.createElement('div'); wrap.className='card';
       const {bg,fg}=badgeColor(malassezia);
@@ -128,14 +141,12 @@
           </div>
         </div>`;
 
-      // 이미지 순차 시도
       const imageEl = wrap.querySelector('img.image');
       let idx = 0;
       const tryNext = () => {
         if(idx >= candidates.length){
-          console.warn('이미지 모두 실패:', name, candidates);
           imageEl.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-            `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="200">
+            `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160">
                <rect width="100%" height="100%" fill="#f3f4f6"/>
                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9ca3af" font-size="14">이미지 없음</text>
              </svg>`
@@ -145,13 +156,9 @@
         const url = candidates[idx++];
         imageEl.src = url;
       };
-      imageEl.addEventListener('error', () => {
-        console.warn('이미지 실패 → 다음 후보 시도:', name, imageEl.src);
-        tryNext();
-      });
-      tryNext(); // 첫 시도
+      imageEl.addEventListener('error', tryNext);
+      tryNext();
 
-      // 특징 리스트
       const info=wrap.querySelector('.info');
       (features||'').split(/\n|✔|✅|▪|•|-\s/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
         const row=document.createElement('div'); row.className='feature';
@@ -159,7 +166,6 @@
         info.appendChild(row);
       });
 
-      // 구매 버튼
       if(link){
         const a=document.createElement('a');
         a.href=link; a.target='_blank'; a.className='button'; a.textContent='구매하기';
@@ -168,7 +174,6 @@
       return wrap;
     }
 
-    /* 헤더 정규화(열 이름 흔들림 방지) */
     const headerMap = {
       "type":"type","제품분류":"type",
       "img":"img","image":"img","이미지":"img","제품사진":"img",
@@ -179,30 +184,22 @@
     };
     const normHeader = h => headerMap[h.replace(/\uFEFF/g,'').trim().toLowerCase()] || h.replace(/\uFEFF/g,'').trim().toLowerCase();
 
-    /* CSV 로드 → PapaParse 파싱 → 렌더 */
     fetch(SHEET_CSV_URL)
-      .then(r => { if(!r.ok) throw new Error(`CSV 요청 실패: ${r.status}`); return r.text(); })
+      .then(r => r.text())
       .then(csv => {
-        const { data, errors } = Papa.parse(csv, { header:true, skipEmptyLines:true, transformHeader: normHeader });
-        if(errors?.length) console.warn('CSV parse warnings:', errors.slice(0,3));
-
+        const { data } = Papa.parse(csv, { header:true, skipEmptyLines:true, transformHeader: normHeader });
         const rows = (data||[]).map(r => ({
-          type:       normalizeType((r.type||'').trim()),
-          img:        (r.img||'').trim(),
-          name:       (r.name||'').trim(),
+          type: normalizeType((r.type||'').trim()),
+          img: (r.img||'').trim(),
+          name: (r.name||'').trim(),
           malassezia: (r.malassezia||'').trim(),
-          features:   (r.features||'').trim(),
-          link:       (r.link||'').trim()
+          features: (r.features||'').trim(),
+          link: (r.link||'').trim()
         }));
-
         CATEGORY_ORDER.forEach(type => {
           const target=document.getElementById(`list-${type}`);
           rows.filter(x => x.type === type).forEach(x => target.appendChild(createCard(x)));
         });
-      })
-      .catch(err => {
-        console.error('CSV 로드 오류', err);
-        alert('CSV를 불러오지 못했습니다. "파일 → 웹에 게시 → CSV" 링크와 이미지 공유 권한을 확인해주세요.');
       });
   </script>
 </body>
