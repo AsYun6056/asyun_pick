@@ -40,9 +40,8 @@
     .details{display:flex;gap:32px}
     .info{flex:1}
     .feature{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
-    .feature .emoji{min-width:20px} /* 이모지 폭 고정해서 불필요한 줄바꿈 감소 */
 
-    /* ✅ PC: 이미지 160x160 정사각형 유지 */
+    /* PC(기본) 정사각형 이미지 */
     .image{width:160px;aspect-ratio:1/1;border-radius:12px;object-fit:cover}
 
     .button{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:12px 22px;background:#60a5fa;color:#fff;font-size:.95rem;font-weight:800;border-radius:10px;text-decoration:none;transition:.25s}
@@ -50,27 +49,38 @@
 
     .note{margin:16px auto 40px;color:#6b7280;font-size:.875rem;text-align:center;max-width:800px}
 
-    /* 📱 모바일 전용(<=768px) */
+    /* 📱 모바일 전용 (PC 영향 없음) */
     @media (max-width:768px){
       .header img{width:100vw;height:auto}
-      .header{margin-bottom:12px;padding-bottom:8px}
+      .header{margin-bottom:12px; padding-bottom:8px}
 
-      .description{padding:14px;margin:18px 12px 16px}
-      .disclosure{margin:12px 12px 10px;padding:12px}
-      .category{margin:14px auto 8px;padding:10px 16px}
+      .description{padding:14px; margin:18px 12px 16px}
+      .disclosure{margin:12px 12px 10px; padding:12px}
+      .category{margin:14px auto 8px; padding:10px 16px}
 
       .list{padding:0 8px}
-      .card{padding:14px 12px}
+      .card{padding:14px 10px}
 
-      /* 텍스트가 덜 줄바꿈 되도록 살짝 축소 + 단어쪼개기 최소화 */
-      .feature span{font-size:.92rem;line-height:1.5;word-break:keep-all;letter-spacing:-0.1px}
+      /* 줄바꿈 완화: 텍스트 폭 확보 + 이미지 더 작게/우하단 배치 */
+      .details{ gap:10px; align-items:flex-start; }
+      .info{ min-width:0; }
+      .content{ padding-right:8px; }
 
-      /* ✅ 모바일: 이미지 오른쪽-아래 귀퉁이로 내리고, 텍스트 영역은 오른쪽 여백 확보 */
-      .details{position:relative;gap:16px}
-      .info{padding-right:112px}         /* 이미지 자리만큼만 여백 확보 (텍스트 줄바꿈 감소) */
       .image{
-        position:absolute;right:10px;bottom:10px;
-        width:100px;aspect-ratio:1/1;border-radius:10px
+        width:88px;                /* 100 → 88 */
+        aspect-ratio:1/1;
+        border-radius:10px;
+        margin-left:4px;
+        transform:translate(10px,14px); /* 오른쪽·아래로 살짝 */
+      }
+
+      .feature .emoji{display:inline-block;width:22px;flex:0 0 22px}
+      .feature span:last-child{
+        hyphens:auto;
+        word-break:auto;
+        text-wrap:pretty;          /* 지원 브라우저에서 줄나눔 품질 개선 */
+        line-height:1.55;
+        font-size:.98rem;
       }
     }
   </style>
@@ -109,16 +119,13 @@
   <p class="note">말라세지아 유발 성분 기준: 0개 최상(초록), 2–3개 양호(연노랑), 4–5개 주의(주황), 6–8개 경계(살구), 9개 이상 위험(빨강)</p>
 
   <script>
-    /* CSV */
     const RAW_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSiG4Jm5mSMOWJ6AA1fTWn2ZTBalNnWyhTdjbiPQtjiqkaeVXl-TKqnbLOwaaA801YmjKr119UBTiO/pub?gid=234443271&single=true&output=csv";
     const SHEET_CSV_URL = RAW_CSV + (RAW_CSV.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
 
-    /* 타입 매핑 */
     const TYPE_ALIASES = {"클렌저":"클렌저","cleanser":"클렌저","크림":"크림","cream":"크림","선크림":"선크림","sunscreen":"선크림"};
     const CATEGORY_ORDER = ["클렌저","크림","선크림"];
     const normalizeType = t => TYPE_ALIASES[(t||"").toLowerCase()] || (t||"");
 
-    /* 구글 드라이브 이미지 후보 URL */
     function extractDriveId(url){
       if(!url) return null;
       const clean = url.replace(/\uFEFF/g,'').trim();
@@ -136,7 +143,6 @@
       ];
     }
 
-    /* 배지 색 */
     function badgeColor(value){
       const n = Number(String(value).replace(/\D/g,'')) || 0;
       if(n<=1) return {bg:'#dcfce7', fg:'#16a34a'};
@@ -146,7 +152,6 @@
       return {bg:'#fecaca', fg:'#991b1b'};
     }
 
-    /* 카드 생성 */
     function createCard({name,img,malassezia,features,link}){
       const wrap=document.createElement('div'); wrap.className='card';
       const {bg,fg}=badgeColor(malassezia);
@@ -167,7 +172,6 @@
           </div>
         </div>`;
 
-      // 이미지 순차 시도
       const imageEl = wrap.querySelector('img.image');
       let idx = 0;
       const tryNext = () => {
@@ -185,7 +189,6 @@
       imageEl.addEventListener('error', tryNext);
       tryNext();
 
-      // 특징 리스트
       const info=wrap.querySelector('.info');
       (features||'').split(/\n|✔|✅|▪|•|-\s/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
         const row=document.createElement('div'); row.className='feature';
@@ -193,7 +196,6 @@
         info.appendChild(row);
       });
 
-      // 구매 버튼
       if(link){
         const a=document.createElement('a');
         a.href=link; a.target='_blank'; a.className='button'; a.textContent='구매하기';
@@ -202,7 +204,6 @@
       return wrap;
     }
 
-    /* CSV 로드 → 렌더 */
     fetch(SHEET_CSV_URL)
       .then(r => r.text())
       .then(csv => {
