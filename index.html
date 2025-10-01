@@ -56,33 +56,31 @@
     .score.red{background:#fecaca;color:#991b1b}
 
     /* ===== PC 전용 =====
-       - 점수 원: 헤더 우측 ‘원래’ 위치 유지(고정X)
-       - 이미지: 헤더 아래~카드 바닥 사이 ‘남은 영역’의 세로 가운데에 배치
-       - 크기: 160x160 정사각 유지
+       - 점수 원: 헤더 우측 ‘원래’ 위치 유지
+       - 이미지: 헤더 아래~카드 바닥 사이 우측 칼럼의 세로 중앙
+       - 크기: 160x160 정사각
     */
     @media (min-width: 769px){
-      /* 헤더는 그대로, 점수는 원래 자리에 둠 */
       .header-row{align-items:flex-start}
-
-      /* 헤더 아래 영역을 그리드로 쪼개서 우측 칼럼에 이미지 세로 중앙 정렬 */
       .details{
         display:grid;
-        grid-template-columns:1fr 200px;   /* 좌:텍스트, 우:이미지 박스(여유) */
+        grid-template-columns:1fr 200px;
         align-items:stretch;
-        min-height:180px;                  /* 이미지가 예쁘게 중앙 오도록 최소 높이 */
+        min-height:180px;
+        column-gap:32px;
       }
       .img-wrap{
         display:flex;
-        align-items:center;                /* 세로 중앙 */
-        justify-content:flex-end;          /* 우측 정렬 */
-        padding-right:0;
+        align-items:center;       /* 세로 중앙 */
+        justify-content:flex-end; /* 우측 정렬 */
       }
       .image{width:160px;height:160px}
     }
 
     /* ===== 모바일 전용 =====
-       - 이미지: 오른쪽 아래 귀퉁이(100x100)
-       - 텍스트 오른쪽 여백 확보로 줄바꿈 최소화
+       - 점수 원은 헤더 우측 기본 자리 유지(PC와 동일)
+       - 이미지도 PC와 같은 배치 방식(우측 칼럼 세로 중앙)으로 변경
+       - 칼럼 폭/이미지 크기만 축소해 줄바꿈 최소화
     */
     @media (max-width:768px){
       .header img{width:100vw;height:auto}
@@ -96,16 +94,23 @@
       .card{padding:14px 10px}
       .content{padding:12px}
 
-      /* 텍스트 영역 우측에 이미지 들어갈 공간 확보 */
-      .details{position:relative;display:block;padding-right:116px}
-      .img-wrap{position:absolute;right:8px;bottom:8px}
+      /* PC와 동일한 그리드 배치 (우측 칼럼 폭만 축소) */
+      .details{
+        display:grid;
+        grid-template-columns:1fr 116px;  /* 텍스트 / 이미지 칼럼 */
+        align-items:center;                /* 이미지 세로 중앙 */
+        column-gap:12px;
+        min-height:140px;
+      }
+      .img-wrap{
+        display:flex;
+        align-items:center;
+        justify-content:flex-end;
+      }
       .image{width:100px;height:100px;border-radius:10px}
 
-      /* 점수 원은 헤더 기본 위치 유지 */
-      .score{position:static;transform:none}
-
       .feature{margin-bottom:10px}
-      .feature span{font-size:.95rem;line-height:1.55;word-break:keep-all;white-space:normal}
+      .feature span{font-size:1rem;line-height:1.55;word-break:keep-all;white-space:normal}
       .button{font-size:.95rem}
     }
   </style>
@@ -114,7 +119,7 @@
   <!-- 커버 이미지(레포 루트에 header-image.png) -->
   <div class="header"><img src="header-image.png" alt="Header Image"></div>
 
-  <!-- 내러티브 박스 (문구 원문 유지) -->
+  <!-- 내러티브 박스 : 원문 그대로 -->
   <div class="description">
     <p><strong>💡 또 피부 뒤집어지고, 또 돈 버리지 않도록.</strong></p>
     <p>✓ 수백 개 제품 전성분 하나하나 비교</p>
@@ -126,7 +131,7 @@
     <p><strong>믿고 보는 에즈윤픽, 지금 바로 확인해보세요!</strong></p>
   </div>
 
-  <!-- 수수료 고지 (문구 원문 유지) -->
+  <!-- 수수료 고지 : 원문 그대로 -->
   <div class="disclosure">
     ** 구매하기 링크를 통해 제품을 구입하시면<br/>
     올영/쿠팡파트너스 일환으로 소정의 수수료를 받게 되어<br/>
