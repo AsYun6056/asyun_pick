@@ -9,86 +9,69 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
-    body{
-      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
-      margin:0; padding:0; background:#f9fafb;
-    }
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;margin:0;padding:0;background:#f9fafb}
+    .header img{max-width:100%;height:auto;max-height:60vh;margin:0 auto;display:block}
 
-    /* 헤더(커버) */
-    .header img{ max-width:100%; height:auto; max-height:60vh; margin:0 auto; display:block; }
-
-    /* 인트로 내러티브 박스 */
     .description{
-      max-width:600px; margin:16px auto; padding:20px;
-      background:#fff; border:1px solid #e5e7eb; border-radius:12px;
-      box-shadow:0 1px 3px rgba(0,0,0,.1); text-align:center; color:#4b5563;
+      max-width:600px;margin:16px auto;padding:20px;
+      background:#fff;border:1px solid #e5e7eb;border-radius:12px;
+      box-shadow:0 1px 3px rgba(0,0,0,.1);text-align:center;color:#4b5563
     }
-    .description p{ margin:0 0 4px; line-height:1.6; }
-    .description strong{ font-weight:700; }
+    .description p{margin:0 0 4px;line-height:1.6}
+    .description strong{font-weight:700}
 
-    /* 수수료 고지 */
     .disclosure{
-      max-width:600px; margin:0 auto 20px; padding:14px 16px;
-      background:#fff; border:1px solid #e5e7eb; border-radius:12px;
-      color:#4b5563; font-size:.95rem; line-height:1.55; text-align:center;
+      max-width:600px;margin:0 auto 20px;padding:14px 16px;
+      background:#fff;border:1px solid #e5e7eb;border-radius:12px;
+      color:#4b5563;font-size:.95rem;line-height:1.55;text-align:center
     }
 
-    /* 카테고리 헤더 */
-    .category{ text-align:left; max-width:800px; margin:20px auto 8px; padding:10px 20px; border-radius:16px; }
-    .category.green{  background:#e7f3e6; }
-    .category.blue{   background:#e7f0fa; }
-    .category.yellow{ background:#fff6cc; }
-    .category h2{ font-size:1.5rem; color:#111827; margin:0; font-weight:800; }
+    .category{text-align:left;max-width:800px;margin:20px auto 8px;padding:10px 20px;border-radius:16px}
+    .category.green{background:#e7f3e6}
+    .category.blue{background:#e7f0fa}
+    .category.yellow{background:#fff6cc}
+    .category h2{font-size:1.5rem;color:#111827;margin:0;font-weight:800}
 
-    /* 카드 리스트 + 카드 */
-    .list{ display:flex; flex-direction:column; gap:12px; max-width:800px; margin:12px auto 28px; padding:0 20px; }
-    .card{
-      background:#fff; border-radius:16px; padding:16px 24px;
-      max-width:600px; width:100%; margin:0 auto; box-shadow:0 2px 10px rgba(0,0,0,.06);
-    }
-    .content{ border:none; border-radius:8px; padding:16px; }
-    .header-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-    .score{ width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.25rem; }
-    .details{ display:flex; gap:32px; align-items:flex-start; }
-    .info{ flex:1; min-width:0; } /* 텍스트 영역이 좁아지지 않도록 */
-    .feature{ display:flex; align-items:flex-start; gap:8px; margin-bottom:12px; }
-    .feature span{ word-break:keep-all; white-space:normal; line-height:1.5; }
+    .list{display:flex;flex-direction:column;gap:12px;max-width:800px;margin:12px auto 28px;padding:0 20px}
+    .card{background:#fff;border-radius:16px;padding:16px 24px;max-width:600px;width:100%;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .content{border:none;border-radius:8px;padding:16px}
+    .header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .score{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.25rem}
+    .details{display:flex;gap:32px}
+    .info{flex:1}
+    .feature{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
+    .feature .emoji{min-width:20px} /* 이모지 폭 고정해서 불필요한 줄바꿈 감소 */
 
-    /* PC 기본 정사각 이미지 */
-    .image{
-      width:160px; height:160px; aspect-ratio:1/1;
-      border-radius:12px; object-fit:cover;
-      margin-left:auto;              /* 오른쪽 끝으로 */
-    }
+    /* ✅ PC: 이미지 160x160 정사각형 유지 */
+    .image{width:160px;aspect-ratio:1/1;border-radius:12px;object-fit:cover}
 
-    /* 버튼 */
-    .button{
-      display:inline-flex; align-items:center; gap:8px; margin-top:16px;
-      padding:12px 22px; background:#60a5fa; color:#fff; font-size:.95rem; font-weight:800;
-      border-radius:10px; text-decoration:none; transition:.25s;
-    }
-    .button:hover{ background:#3b82f6; }
+    .button{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:12px 22px;background:#60a5fa;color:#fff;font-size:.95rem;font-weight:800;border-radius:10px;text-decoration:none;transition:.25s}
+    .button:hover{background:#3b82f6}
 
-    /* 하단 노트 */
-    .note{ margin:16px auto 40px; color:#6b7280; font-size:.875rem; text-align:center; max-width:800px; }
+    .note{margin:16px auto 40px;color:#6b7280;font-size:.875rem;text-align:center;max-width:800px}
 
-    /* 📱 모바일 전용 */
+    /* 📱 모바일 전용(<=768px) */
     @media (max-width:768px){
-      .header img{ width:100vw; height:auto; }
-      .header{ margin-bottom:12px; padding-bottom:8px; }
+      .header img{width:100vw;height:auto}
+      .header{margin-bottom:12px;padding-bottom:8px}
 
-      .description{ padding:14px; margin:18px 12px 16px; }
-      .disclosure{ margin:12px 12px 10px; padding:12px; }
-      .category{ margin:14px auto 8px; padding:10px 16px; }
+      .description{padding:14px;margin:18px 12px 16px}
+      .disclosure{margin:12px 12px 10px;padding:12px}
+      .category{margin:14px auto 8px;padding:10px 16px}
 
-      .list{ padding:0 8px; }
-      .card{ padding:14px 10px; }
-      .details{ align-items:flex-end; gap:16px; }   /* 이미지가 살짝 아래에 위치 */
+      .list{padding:0 8px}
+      .card{padding:14px 12px}
+
+      /* 텍스트가 덜 줄바꿈 되도록 살짝 축소 + 단어쪼개기 최소화 */
+      .feature span{font-size:.92rem;line-height:1.5;word-break:keep-all;letter-spacing:-0.1px}
+
+      /* ✅ 모바일: 이미지 오른쪽-아래 귀퉁이로 내리고, 텍스트 영역은 오른쪽 여백 확보 */
+      .details{position:relative;gap:16px}
+      .info{padding-right:112px}         /* 이미지 자리만큼만 여백 확보 (텍스트 줄바꿈 감소) */
       .image{
-        width:100px; height:100px; border-radius:10px;
-        margin-top:auto; margin-left:auto;          /* 카드 내부 오른쪽-아래로 */
+        position:absolute;right:10px;bottom:10px;
+        width:100px;aspect-ratio:1/1;border-radius:10px
       }
-      .feature span{ font-size:0.95rem; line-height:1.55; }
     }
   </style>
 </head>
@@ -102,8 +85,7 @@
     <p>✓ 수백 개 제품 전성분 하나하나 비교</p>
     <p>✓ 관련 논문까지 파헤치며 리서치</p>
     <p>✓ 말라세지아 모낭염 유발 성분 완벽 체크</p>
-    <p><strong>직접 깐깐하게 고르고 골랐습니다.</strong></p>
-    <br/>
+    <p><strong>직접 깐깐하게 고르고 골랐습니다.</strong></p><br/>
     <p>제 피부에 직접 써보고 살아남은 찐템들만 모았습니다.</p>
     <p><strong>민감피부를 위한 단 하나의 리스트 ✨</strong></p>
     <p><strong>믿고 보는 에즈윤픽, 지금 바로 확인해보세요!</strong></p>
@@ -111,33 +93,32 @@
 
   <!-- 수수료 고지 -->
   <div class="disclosure">
-    ** 본 페이지의 구매 링크는 올영/쿠팡파트너스 활동을 포함하며,<br/>
-    이를 통해 발생한 수수료는 에즈윤 채널 운영과 콘텐츠 제작에 도움이 됩니다 :)
+    ** 구매하기 링크를 통해 제품을 구입하시면<br/>
+    올영/쿠팡파트너스 일환으로 소정의 수수료를 받게 되어<br/>
+    에즈윤 채널 운영 및 영상 제작에 큰 도움이 됩니다 :)
   </div>
 
   <!-- 카테고리 -->
   <div class="category green"><h2>1. 클렌저</h2></div>
   <div id="list-클렌저" class="list"></div>
-
   <div class="category blue"><h2>2. 크림</h2></div>
   <div id="list-크림" class="list"></div>
-
   <div class="category yellow"><h2>3. 선크림</h2></div>
   <div id="list-선크림" class="list"></div>
 
   <p class="note">말라세지아 유발 성분 기준: 0개 최상(초록), 2–3개 양호(연노랑), 4–5개 주의(주황), 6–8개 경계(살구), 9개 이상 위험(빨강)</p>
 
   <script>
-    /* 1) CSV 주소(웹에 게시 → CSV) */
+    /* CSV */
     const RAW_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSiG4Jm5mSMOWJ6AA1fTWn2ZTBalNnWyhTdjbiPQtjiqkaeVXl-TKqnbLOwaaA801YmjKr119UBTiO/pub?gid=234443271&single=true&output=csv";
     const SHEET_CSV_URL = RAW_CSV + (RAW_CSV.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
 
-    /* 타입 매핑 + 섹션 순서 */
+    /* 타입 매핑 */
     const TYPE_ALIASES = {"클렌저":"클렌저","cleanser":"클렌저","크림":"크림","cream":"크림","선크림":"선크림","sunscreen":"선크림"};
     const CATEGORY_ORDER = ["클렌저","크림","선크림"];
     const normalizeType = t => TYPE_ALIASES[(t||"").toLowerCase()] || (t||"");
 
-    /* 구글 드라이브 이미지: 파일 ID 추출 + 후보 URL들 생성 */
+    /* 구글 드라이브 이미지 후보 URL */
     function extractDriveId(url){
       if(!url) return null;
       const clean = url.replace(/\uFEFF/g,'').trim();
@@ -146,7 +127,7 @@
     }
     function buildDriveCandidates(url){
       const id = extractDriveId(url);
-      if(!id) return [url]; // 외부 URL일 수 있음
+      if(!id) return [url];
       return [
         `https://drive.google.com/thumbnail?id=${id}&sz=w800`,
         `https://drive.google.com/uc?export=view&id=${id}`,
@@ -206,13 +187,11 @@
 
       // 특징 리스트
       const info=wrap.querySelector('.info');
-      (features||'')
-        .split(/\n|✔|✅|▪|•|-\s/).map(s=>s.trim()).filter(Boolean)
-        .forEach(line=>{
-          const row=document.createElement('div'); row.className='feature';
-          row.innerHTML=`<span class="emoji">✅</span><span style="color:#4b5563;font-size:.95rem;">${line}</span>`;
-          info.appendChild(row);
-        });
+      (features||'').split(/\n|✔|✅|▪|•|-\s/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
+        const row=document.createElement('div'); row.className='feature';
+        row.innerHTML=`<span class="emoji">✅</span><span style="color:#4b5563;font-size:.95rem;">${line}</span>`;
+        info.appendChild(row);
+      });
 
       // 구매 버튼
       if(link){
@@ -225,29 +204,21 @@
 
     /* CSV 로드 → 렌더 */
     fetch(SHEET_CSV_URL)
-      .then(r => {
-        if(!r.ok) throw new Error(`CSV 요청 실패: ${r.status}`);
-        return r.text();
-      })
+      .then(r => r.text())
       .then(csv => {
         const { data } = Papa.parse(csv, { header:true, skipEmptyLines:true });
         const rows = (data||[]).map(r => ({
-          type:       normalizeType((r.type||'').trim()),
-          img:        (r.img||'').trim(),
-          name:       (r.name||'').trim(),
+          type: normalizeType((r.type||'').trim()),
+          img: (r.img||'').trim(),
+          name: (r.name||'').trim(),
           malassezia: (r.malassezia||'').trim(),
-          features:   (r.features||'').trim(),
-          link:       (r.link||'').trim()
+          features: (r.features||'').trim(),
+          link: (r.link||'').trim()
         }));
-
         CATEGORY_ORDER.forEach(type => {
           const target=document.getElementById(`list-${type}`);
           rows.filter(x => x.type === type).forEach(x => target.appendChild(createCard(x)));
         });
-      })
-      .catch(err => {
-        console.error('CSV 로드 오류', err);
-        alert('CSV를 불러오지 못했습니다. "웹에 게시 → CSV" 링크와 이미지 공유 권한을 확인해 주세요.');
       });
   </script>
 </body>
