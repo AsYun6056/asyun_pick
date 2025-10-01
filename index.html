@@ -9,7 +9,8 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;margin:0;padding:0;background:#f9fafb}
+    /* 기본 레이아웃 */
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;margin:0;padding:0;background:#f9fafb;color:#111827}
     .header img{max-width:100%;height:auto;max-height:60vh;margin:0 auto;display:block}
 
     .description{
@@ -33,40 +34,79 @@
     .category h2{font-size:1.5rem;color:#111827;margin:0;font-weight:800}
 
     .list{display:flex;flex-direction:column;gap:12px;max-width:800px;margin:12px auto 28px;padding:0 20px}
-    .card{background:#fff;border-radius:16px;padding:16px 24px;max-width:600px;width:100%;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+
+    /* 카드 공통 */
+    .card{background:#fff;border-radius:16px;padding:16px 24px;max-width:600px;width:100%;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,.06);position:relative}
     .content{border:none;border-radius:8px;padding:16px}
     .header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .score{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.25rem}
     .details{display:flex;gap:32px}
     .info{flex:1}
     .feature{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
-
-    /* 정사각형 이미지 */
-    .image{width:160px;aspect-ratio:1/1;border-radius:12px;object-fit:cover}
-
+    .feature span{word-break:keep-all;hyphens:auto}
+    .image{object-fit:cover;border-radius:12px}
     .button{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:12px 22px;background:#60a5fa;color:#fff;font-size:.95rem;font-weight:800;border-radius:10px;text-decoration:none;transition:.25s}
     .button:hover{background:#3b82f6}
-
     .note{margin:16px auto 40px;color:#6b7280;font-size:.875rem;text-align:center;max-width:800px}
 
-    /* 📱 모바일 전용 */
+    /* 점수 컬러 */
+    .score.green{background:#dcfce7;color:#16a34a}
+    .score.yellow{background:#fef9c3;color:#ca8a04}
+    .score.orange{background:#fde68a;color:#b45309}
+    .score.red{background:#fecaca;color:#991b1b}
+
+    /* ===== PC 전용 =====
+       - 점수 원: 헤더 우측 ‘원래’ 위치 유지(고정X)
+       - 이미지: 헤더 아래~카드 바닥 사이 ‘남은 영역’의 세로 가운데에 배치
+       - 크기: 160x160 정사각 유지
+    */
+    @media (min-width: 769px){
+      /* 헤더는 그대로, 점수는 원래 자리에 둠 */
+      .header-row{align-items:flex-start}
+
+      /* 헤더 아래 영역을 그리드로 쪼개서 우측 칼럼에 이미지 세로 중앙 정렬 */
+      .details{
+        display:grid;
+        grid-template-columns:1fr 200px;   /* 좌:텍스트, 우:이미지 박스(여유) */
+        align-items:stretch;
+        min-height:180px;                  /* 이미지가 예쁘게 중앙 오도록 최소 높이 */
+      }
+      .img-wrap{
+        display:flex;
+        align-items:center;                /* 세로 중앙 */
+        justify-content:flex-end;          /* 우측 정렬 */
+        padding-right:0;
+      }
+      .image{width:160px;height:160px}
+    }
+
+    /* ===== 모바일 전용 =====
+       - 이미지: 오른쪽 아래 귀퉁이(100x100)
+       - 텍스트 오른쪽 여백 확보로 줄바꿈 최소화
+    */
     @media (max-width:768px){
       .header img{width:100vw;height:auto}
-      /* 커버 아래 확실한 간격(마진 겹침 방지용) */
-      .header{margin-bottom:12px; padding-bottom:8px}
+      .header{margin-bottom:12px;padding-bottom:8px}
 
-      /* 커버 → 내러티브 박스 : 여유 있게 */
-      .description{padding:14px; margin:18px 12px 16px}
-
-      /* 내러티브 → 수수료 박스 : 기본 간격 */
-      .disclosure{margin:12px 12px 10px; padding:12px}
-
-      /* 수수료 → 첫 카테고리(클렌저) : 너무 넓지 않게 */
-      .category{margin:14px auto 8px; padding:10px 16px}
+      .description{padding:14px;margin:18px 12px 16px}
+      .disclosure{margin:12px 12px 10px;padding:12px}
+      .category{margin:14px auto 8px;padding:10px 16px}
 
       .list{padding:0 8px}
       .card{padding:14px 10px}
-      .image{width:100px;aspect-ratio:1/1;border-radius:10px}
+      .content{padding:12px}
+
+      /* 텍스트 영역 우측에 이미지 들어갈 공간 확보 */
+      .details{position:relative;display:block;padding-right:116px}
+      .img-wrap{position:absolute;right:8px;bottom:8px}
+      .image{width:100px;height:100px;border-radius:10px}
+
+      /* 점수 원은 헤더 기본 위치 유지 */
+      .score{position:static;transform:none}
+
+      .feature{margin-bottom:10px}
+      .feature span{font-size:.95rem;line-height:1.55;word-break:keep-all;white-space:normal}
+      .button{font-size:.95rem}
     }
   </style>
 </head>
@@ -74,7 +114,7 @@
   <!-- 커버 이미지(레포 루트에 header-image.png) -->
   <div class="header"><img src="header-image.png" alt="Header Image"></div>
 
-  <!-- 내러티브 박스 -->
+  <!-- 내러티브 박스 (문구 원문 유지) -->
   <div class="description">
     <p><strong>💡 또 피부 뒤집어지고, 또 돈 버리지 않도록.</strong></p>
     <p>✓ 수백 개 제품 전성분 하나하나 비교</p>
@@ -86,7 +126,7 @@
     <p><strong>믿고 보는 에즈윤픽, 지금 바로 확인해보세요!</strong></p>
   </div>
 
-  <!-- 수수료 고지 -->
+  <!-- 수수료 고지 (문구 원문 유지) -->
   <div class="disclosure">
     ** 구매하기 링크를 통해 제품을 구입하시면<br/>
     올영/쿠팡파트너스 일환으로 소정의 수수료를 받게 되어<br/>
@@ -104,13 +144,16 @@
   <p class="note">말라세지아 유발 성분 기준: 0개 최상(초록), 2–3개 양호(연노랑), 4–5개 주의(주황), 6–8개 경계(살구), 9개 이상 위험(빨강)</p>
 
   <script>
+    /* CSV */
     const RAW_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSiG4Jm5mSMOWJ6AA1fTWn2ZTBalNnWyhTdjbiPQtjiqkaeVXl-TKqnbLOwaaA801YmjKr119UBTiO/pub?gid=234443271&single=true&output=csv";
     const SHEET_CSV_URL = RAW_CSV + (RAW_CSV.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
 
+    /* 타입/순서 */
     const TYPE_ALIASES = {"클렌저":"클렌저","cleanser":"클렌저","크림":"크림","cream":"크림","선크림":"선크림","sunscreen":"선크림"};
     const CATEGORY_ORDER = ["클렌저","크림","선크림"];
     const normalizeType = t => TYPE_ALIASES[(t||"").toLowerCase()] || (t||"");
 
+    /* 드라이브 이미지 */
     function extractDriveId(url){
       if(!url) return null;
       const clean = url.replace(/\uFEFF/g,'').trim();
@@ -128,18 +171,19 @@
       ];
     }
 
-    function badgeColor(value){
+    /* 배지 색상 */
+    function badgeClass(value){
       const n = Number(String(value).replace(/\D/g,'')) || 0;
-      if(n<=1) return {bg:'#dcfce7', fg:'#16a34a'};
-      if(n<=3) return {bg:'#fef9c3', fg:'#ca8a04'};
-      if(n<=5) return {bg:'#fde68a', fg:'#b45309'};
-      if(n<=8) return {bg:'#fee2e2', fg:'#b91c1c'};
-      return {bg:'#fecaca', fg:'#991b1b'};
+      if(n<=1) return 'green';
+      if(n<=3) return 'yellow';
+      if(n<=5) return 'orange';
+      return 'red';
     }
 
+    /* 카드 생성 */
     function createCard({name,img,malassezia,features,link}){
       const wrap=document.createElement('div'); wrap.className='card';
-      const {bg,fg}=badgeColor(malassezia);
+      const scoreCls = badgeClass(malassezia);
       const candidates = buildDriveCandidates(img);
 
       wrap.innerHTML=`
@@ -149,11 +193,11 @@
               <h2 style="margin:0;font-size:1.25rem;font-weight:800;">${name||''}</h2>
               <p style="color:#4b5563;font-size:.95rem;margin-top:8px;">말라세지아 유발 성분: ${malassezia||'0개'}</p>
             </div>
-            <div class="score" style="background:${bg};color:${fg};">${(malassezia||'0').toString().replace(/\D/g,'')||'0'}</div>
+            <div class="score ${scoreCls}">${(malassezia||'0').toString().replace(/\D/g,'')||'0'}</div>
           </div>
           <div class="details">
             <div class="info"></div>
-            <div><img class="image" referrerpolicy="no-referrer" loading="lazy" alt="${name||''}"></div>
+            <div class="img-wrap"><img class="image" referrerpolicy="no-referrer" loading="lazy" alt="${name||''}"></div>
           </div>
         </div>`;
 
@@ -177,7 +221,7 @@
       const info=wrap.querySelector('.info');
       (features||'').split(/\n|✔|✅|▪|•|-\s/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
         const row=document.createElement('div'); row.className='feature';
-        row.innerHTML=`<span class="emoji">✅</span><span style="color:#4b5563;font-size:.95rem;">${line}</span>`;
+        row.innerHTML=`<span class="emoji">✅</span><span style="color:#4b5563;font-size:1rem;">${line}</span>`;
         info.appendChild(row);
       });
 
@@ -189,22 +233,27 @@
       return wrap;
     }
 
+    /* 렌더링 */
     fetch(SHEET_CSV_URL)
       .then(r => r.text())
       .then(csv => {
         const { data } = Papa.parse(csv, { header:true, skipEmptyLines:true });
         const rows = (data||[]).map(r => ({
-          type: normalizeType((r.type||'').trim()),
-          img: (r.img||'').trim(),
-          name: (r.name||'').trim(),
+          type:       normalizeType((r.type||'').trim()),
+          img:        (r.img||'').trim(),
+          name:       (r.name||'').trim(),
           malassezia: (r.malassezia||'').trim(),
-          features: (r.features||'').trim(),
-          link: (r.link||'').trim()
+          features:   (r.features||'').trim(),
+          link:       (r.link||'').trim()
         }));
         CATEGORY_ORDER.forEach(type => {
           const target=document.getElementById(`list-${type}`);
           rows.filter(x => x.type === type).forEach(x => target.appendChild(createCard(x)));
         });
+      })
+      .catch(err => {
+        console.error('CSV 로드 오류', err);
+        alert('CSV를 불러오지 못했습니다. "웹에 게시 → CSV" 링크와 이미지 공유 권한을 확인해주세요.');
       });
   </script>
 </body>
